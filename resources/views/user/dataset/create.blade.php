@@ -447,17 +447,17 @@
             const hdms = ol.coordinate.toStringHDMS(coordinate);
 
             let htmlContent = `
-                <div class="px-2 py-1">
+                <div>
                     <div class="row">
                         <label for="name" class="col-sm-4 col-form-label">Name:</label>
                         <div class="col-sm-8">
-                        <input type="text" readonly class="form-control-plaintext" id="name" value="${feature.get('first_name')} ${feature.get('last_name')}">
+                        <p class="form-control-plaintext">${feature.get('first_name')} ${feature.get('last_name')}</p>
                         </div>
                     </div>
                     <div class="row">
                         <label for="age" class="col-sm-4 col-form-label">Age:</label>
                         <div class="col-sm-8">
-                        <input type="text" readonly class="form-control-plaintext" id="age" value="${feature.get('age')}">
+                        <p class="form-control-plaintext">${feature.get('age')}</p>
                         </div>
                     </div>
                 </div>
@@ -544,10 +544,8 @@
             dob.value=null,
             latitude.value=null,
             longitude.value=null
-        // close modal
-        $('#createDatasetModal').modal('hide');
-        // Remove the layer & Update it
-        map.removeLayer(vectorLayer);
+
+        // Update the vector layer source
         axios.get('{{route("user.dataset.ajax")}}')
                 .then(function (response) {
                     geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
@@ -557,20 +555,16 @@
                     vectorSource = new ol.source.Vector({
                     features: new ol.format.GeoJSON().readFeatures(geojsonObject),
                     });
-
-                    vectorLayer = new ol.layer.Vector({
-                        source: vectorSource,
-                        style: styles,
-                        title: "Datasets",
-                        zIndex: 999,
-                    });
+                    // Set the new source to layer
+                    vectorLayer.setSource(vectorSource);
                 })
                 .catch(function (error) {
                     console.log(error);
                 })
-                .then(function(){
-                    map.addLayer(vectorLayer);
-                })
+
+        // close modal
+        $('#createDatasetModal').modal('hide');
+
 
     });
 /////////////////////////////////////////////////////////////
@@ -596,49 +590,42 @@
             lat: latitude.value,
             lng: longitude.value
         }
-        console.log(updateData);
+        // console.log(updateData);
         axios.put(`{{route("user.dataset.update")}}`, updateData)
-        .then(function (response) {
-            console.log(response);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
+            .then(function (response) {
+                console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
 
         // Reset Form
-            first_name.value=null,
-            last_name.value=null,
-            age.value=null,
-            dob.value=null,
-            latitude.value=null,
-            longitude.value=null
+        first_name.value=null,
+        last_name.value=null,
+        age.value=null,
+        dob.value=null,
+        latitude.value=null,
+        longitude.value=null
+
+        // Update the vector layer source
+        axios.get('{{route("user.dataset.ajax")}}')
+            .then(function (response) {
+                geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
+
+                // console.log(geojsonObject);
+
+                vectorSource = new ol.source.Vector({
+                features: new ol.format.GeoJSON().readFeatures(geojsonObject),
+                });
+                // Set the new source to layer
+                vectorLayer.setSource(vectorSource);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+
         // close modal
         $('#updateDatasetModal').modal('hide');
-        // Remove the layer & Update it
-        map.removeLayer(vectorLayer);
-        axios.get('{{route("user.dataset.ajax")}}')
-                .then(function (response) {
-                    geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
-
-                    console.log(geojsonObject);
-
-                    vectorSource = new ol.source.Vector({
-                    features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                    });
-
-                    vectorLayer = new ol.layer.Vector({
-                        source: vectorSource,
-                        style: styles,
-                        title: "Datasets",
-                        zIndex: 999,
-                    });
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
-                .then(function(){
-                    map.addLayer(vectorLayer);
-                })
 
     })
 
@@ -670,32 +657,26 @@
             dob.value=null,
             latitude.value=null,
             longitude.value=null
+
+         // Update the vector layer source
+         axios.get('{{route("user.dataset.ajax")}}')
+            .then(function (response) {
+                geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
+
+                // console.log(geojsonObject);
+
+                vectorSource = new ol.source.Vector({
+                features: new ol.format.GeoJSON().readFeatures(geojsonObject),
+                });
+                // Set the new source to layer
+                vectorLayer.setSource(vectorSource);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+
         // close modal
         $('#updateDatasetModal').modal('hide');
-        // Remove the layer & Update it
-        map.removeLayer(vectorLayer);
-        axios.get('{{route("user.dataset.ajax")}}')
-                .then(function (response) {
-                    geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
-
-                    console.log(geojsonObject);
-
-                    vectorSource = new ol.source.Vector({
-                    features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                    });
-
-                    vectorLayer = new ol.layer.Vector({
-                        source: vectorSource,
-                        style: styles,
-                        title: "Datasets",
-                        zIndex: 999,
-                    });
-                    map.addLayer(vectorLayer);
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
-
     })
 </script>
 @endpush
