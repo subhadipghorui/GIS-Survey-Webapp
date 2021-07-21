@@ -216,7 +216,6 @@
     // })
 ///////////////////////////////////////////////////////
 // Load data to map
-    let vectorSource;
     let vectorLayer;
     let geojsonObject;
 
@@ -253,29 +252,19 @@
             stroke: stroke,
         })
     ];
-    let datasets = axios.get('{{route("user.dataset.ajax")}}')
-                    .then(function (response) {
-                        geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
 
-                        // console.log(geojsonObject);
+    // PostGIS Data recived as geojson
+    vectorLayer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+                url: '{{route("user.dataset.geojson")}}', // as geojson feturecollections
+                format: new ol.format.GeoJSON(),
+        }),
+        style: styles,
+        title: "Datasets",
+        zIndex: 999,
 
-                        vectorSource = new ol.source.Vector({
-                        features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                        });
-
-                        vectorLayer = new ol.layer.Vector({
-                            source: vectorSource,
-                            style: styles,
-                            title: "Datasets",
-                            zIndex: 999,
-
-                        });
-                        map.addLayer(vectorLayer);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    })
-
+    });
+    map.addLayer(vectorLayer);
 
 //////////////////////////////////////////////////////////
 // Geolocation
@@ -428,9 +417,10 @@
     map.addOverlay(popupOverlay);
     /*************************************
     * Map events
+    * pointermove
     * https://openlayers.org/en/latest/apidoc/module-ol_MapBrowserEvent-MapBrowserEvent.html
     **************************************/
-    map.on('pointermove', function (evt) {
+    map.on('singleclick', function (evt) {
         var features = [];
         map.forEachFeatureAtPixel(evt.pixel,
         function(feature, layer) {
@@ -490,11 +480,19 @@
             // Push the coordinate to the modal
             $('#updateDatasetModal').on('shown.bs.modal', function (event) {
                 var modal = $(this)
+
+                // Formate date yyyy-MM-dd
+                let d = new Date(feature.get('dob'));
+                let d_y = d.getFullYear();
+                let d_m = d.getMonth()+1;
+                let d_d = d.getDate();
+                let d_f =d_y +"-"+String(d_m).padStart(2, '0')+"-"+String(d_d).padStart(2, '0');
+
                 modal.find('.modal-body input#update_id').val(feature.get('id'));
                 modal.find('.modal-body input#update_first_name').val(feature.get('first_name'));
                 modal.find('.modal-body input#update_last_name').val(feature.get('last_name'));
                 modal.find('.modal-body input#update_age').val(feature.get('age'));
-                modal.find('.modal-body input#update_dob').val(feature.get('dob'));
+                modal.find('.modal-body input#update_dob').val(d_f);
                 modal.find('.modal-body input#update_latitude').val(coord[1]);
                 modal.find('.modal-body input#update_longitude').val(coord[0]);
             });
@@ -532,35 +530,21 @@
         axios.post('{{route("user.dataset.store")}}', postData)
         .then(function (response) {
             console.log(response);
+
+            // Update the vector layer source
+            vectorLayer.getSource().refresh();
         })
         .catch(function (error) {
             console.log(error);
         });
 
         // Reset Form
-            first_name.value=null,
-            last_name.value=null,
-            age.value=null,
-            dob.value=null,
-            latitude.value=null,
-            longitude.value=null
-
-        // Update the vector layer source
-        axios.get('{{route("user.dataset.ajax")}}')
-                .then(function (response) {
-                    geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
-
-                    console.log(geojsonObject);
-
-                    vectorSource = new ol.source.Vector({
-                    features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                    });
-                    // Set the new source to layer
-                    vectorLayer.setSource(vectorSource);
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
+            first_name.value=null;
+            last_name.value=null;
+            age.value=null;
+            dob.value=null;
+            latitude.value=null;
+            longitude.value=null;
 
         // close modal
         $('#createDatasetModal').modal('hide');
@@ -594,35 +578,20 @@
         axios.put(`{{route("user.dataset.update")}}`, updateData)
             .then(function (response) {
                 console.log(response);
+                // Update the vector layer source
+                vectorLayer.getSource().refresh();
             })
             .catch(function (error) {
                 console.log(error);
             });
 
         // Reset Form
-        first_name.value=null,
-        last_name.value=null,
-        age.value=null,
-        dob.value=null,
-        latitude.value=null,
-        longitude.value=null
-
-        // Update the vector layer source
-        axios.get('{{route("user.dataset.ajax")}}')
-            .then(function (response) {
-                geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
-
-                // console.log(geojsonObject);
-
-                vectorSource = new ol.source.Vector({
-                features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                });
-                // Set the new source to layer
-                vectorLayer.setSource(vectorSource);
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
+        first_name.value=null;
+        last_name.value=null;
+        age.value=null;
+        dob.value=null;
+        latitude.value=null;
+        longitude.value=null;
 
         // close modal
         $('#updateDatasetModal').modal('hide');
@@ -644,6 +613,9 @@
         axios.post(`{{route("user.dataset.destroy")}}`, updateData)
         .then(function (response) {
             console.log(response);
+
+        // Update the vector layer source
+            vectorLayer.getSource().refresh();
         })
         .catch(function (error) {
             console.log(error);
@@ -651,31 +623,14 @@
 
         // Reset Form
             id.value = null;
-            first_name.value=null,
-            last_name.value=null,
-            age.value=null,
-            dob.value=null,
-            latitude.value=null,
-            longitude.value=null
+            first_name.value=null;
+            last_name.value=null;
+            age.value=null;
+            dob.value=null;
+            latitude.value=null;
+            longitude.value=null;
 
-         // Update the vector layer source
-         axios.get('{{route("user.dataset.ajax")}}')
-            .then(function (response) {
-                geojsonObject = GeoJSON.parse(response.data.data, {Point: ['lat', 'lng']}); //https://github.com/caseycesari/geojson.js
-
-                // console.log(geojsonObject);
-
-                vectorSource = new ol.source.Vector({
-                features: new ol.format.GeoJSON().readFeatures(geojsonObject),
-                });
-                // Set the new source to layer
-                vectorLayer.setSource(vectorSource);
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-
-        // close modal
+       // Close the modal
         $('#updateDatasetModal').modal('hide');
     })
 </script>

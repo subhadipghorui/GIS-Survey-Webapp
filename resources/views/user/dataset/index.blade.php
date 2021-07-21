@@ -108,8 +108,8 @@ $(function () {
                         'dob': new Date(data[i].dob),
                         // 'address': data[i].address,
                         // 'education': data[i].education,
-                        'lat': data[i].lat,
-                        'lng': data[i].lng,
+                        'lat': data[i].geom["\u0000*\u0000lat"],
+                        'lng': data[i].geom["\u0000*\u0000lng"],
                         'created_at':new Date(data[i].created_at),
                         'updated_at':new Date(data[i].updated_at)
                         })

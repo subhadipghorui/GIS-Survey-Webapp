@@ -50,6 +50,7 @@ Route::group(['prefix' => 'user', 'as' => 'user.', 'namespace' => 'user', 'middl
     // Data Table
     Route::get('datasets', 'DatasetController@index')->name('dataset.index');
     Route::get('datasets/ajax', 'DatasetController@ajaxData')->name('dataset.ajax');
+    Route::get('datasets/geojson', 'DatasetController@geoJson')->name('dataset.geojson');
     Route::get('dataset/create', 'DatasetController@create')->name('dataset.create');
     Route::post('dataset/store', 'DatasetController@store')->name('dataset.store');
     Route::put('dataset/update', 'DatasetController@update')->name('dataset.update');
