@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Dataset;
+
 use App\Http\Controllers\Controller;
 use App\PostGISDataset;
 use Illuminate\Http\Request;
 use DataTables;
-use Illuminate\Support\Facades\DB;
 use MStaack\LaravelPostgis\Geometries\Point;
 
 class DatasetController extends Controller
 {
     public function index(){
-        $datasets = Dataset::all();
         return view('user.dataset.index');
     }
     public function ajaxData(){
